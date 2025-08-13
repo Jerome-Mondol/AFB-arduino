@@ -1,40 +1,39 @@
-#include <Wire.h>
-#include <Adafruit_SSD1306.h>
-#include "DHT.h"
+#include <Servo.h>
 
-#define DHTPIN 2
-#define DHTTYPE DHT11
+Servo myservo_plough;
+Servo myservo_seed;
 
-DHT dht(DHTPIN, DHTTYPE);
-
-Adafruit_SSD1306 display(128, 64, &Wire);
+int relayPin = 7;
 
 void setup() {
   Serial.begin(9600);
-  dht.begin();
-
-  display.begin(SSD1306_SWITCHCAPVCC, 0x3C); // initialize OLED
-  display.clearDisplay();
-  display.setTextColor(WHITE);
-  display.setTextSize(2);
+  myservo_plough.attach(2);
+  myservo_plough.write(90);
+  myservo_seed.attach(3);
+  myservo_seed.write(180);
+  pinMode(relayPin, OUTPUT);
+  digitalWrite(relayPin, LOW);
 }
 
 void loop() {
-  delay(2000);
+  digitalWrite(relayPin, HIGH);
+  delay(1500);
 
-  float h = dht.readHumidity();
-  float t = dht.readTemperature();
+  myservo_plough.write(0);
+  delay(300);
+  myservo_plough.write(90);
+  delay(300);
 
-  display.clearDisplay();
+  myservo_seed.write(0);
+  delay(300);
+  myservo_seed.write(180);
+  delay(300);
 
-  if (isnan(h) || isnan(t)) {
-    display.setCursor(0,0);
-    display.println("Sensor Error!");
-  } else {
-    display.setCursor(0,0);
-    display.print("Temp: "); display.print(t); display.println(" C");
-    display.print("Humidity: "); display.print(h); display.println(" %");
+  digitalWrite(relayPin, LOW);
+
+  if (digitalRead(relayPin) == HIGH) {
+    digitalWrite(relayPin, LOW);
   }
 
-  display.display();
+  delay(1000);
 }
